@@ -27,4 +27,3 @@ The original dataset is too large (>25MB) for GitHub. You can download it here: 
 * Handled Class Imbalance in fraud transactions.
 * Improved model accuracy using Ensemble Learning.
 * Final model saved as `credit_card_fraud_model.sav` for deployment.
-* 
