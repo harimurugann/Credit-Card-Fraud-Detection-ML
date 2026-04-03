@@ -1,29 +1,21 @@
-# Credit-Card-Fraud-Detection-ML
-"An end-to-end Machine Learning project to detect fraudulent credit card transactions using Random Forest Classifier."
+# Credit Card Fraud Detection 💳
 
-## Overview
-A Machine Learning project to detect fraudulent transactions using **Random Forest**.
+An AI-powered system to detect fraudulent credit card transactions using Machine Learning.
 
-## Tech Stack
-Python, Scikit-Learn, Pandas, Pickle.
+## 🚀 Overview
+This project uses a **Random Forest Classifier** to identify fraudulent transactions from the Kaggle Credit Card Fraud Detection dataset. It handles highly imbalanced data using under-sampling techniques to ensure high precision.
 
-## Dataset
-The dataset is too large for GitHub (>25MB). 
-Download here: [Kaggle Dataset Link](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
+## 🛠️ Features
+- **Exploratory Data Analysis (EDA)** with Seaborn.
+- **Random Forest Model** for robust classification.
+- **Streamlit Web Interface** for real-time predictions.
+- **Model Persistence** saved as `.sav` using Joblib.
 
-## Performance
-Achieved high accuracy and recall by handling class imbalance and using ensemble learning.
+## 📁 Project Structure
+- `app.py`: Streamlit application code.
+- `credit_card_model.sav`: The trained machine learning model.
+- `requirements.txt`: Necessary libraries for deployment.
 
-
-## 🛠️ Tech Stack
-* **Language:** Python
-* **Libraries:** Scikit-Learn, Pandas, NumPy, Seaborn
-* **Algorithm:** Random Forest Classifier
-
-## 📊 Dataset Information
-The original dataset is too large (>25MB) for GitHub. You can download it here: [Kaggle Credit Card Fraud Dataset](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
-
-## 🚀 Key Features
-* Handled Class Imbalance in fraud transactions.
-* Improved model accuracy using Ensemble Learning.
-* Final model saved as `credit_card_fraud_model.sav` for deployment.
+## 🔧 How to Run
+1. Install requirements: `pip install -r requirements.txt`
+2. Run the app: `streamlit run app.py`
