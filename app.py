@@ -10,19 +10,23 @@ st.title("Credit Card Fraud Detection System")
 
 st.write("Enter transaction features to check for fraud:")
 
-# Creating inputs for all features (Simplified for demonstration)
+# Input field for features
 input_df = st.text_input('Input all feature values separated by commas')
 
 if st.button('Predict'):
     try:
         # Convert input string to numpy array
-        features = np.array([float(x) for x in input_df.split(',')]).reshape(1, -1)
+        input_list = [float(x) for x in input_df.split(',')]
+        features = np.array(input_list).reshape(1, -1)
+        
+        # Making prediction
         prediction = model.predict(features)
         
         if prediction[0] == 0:
             st.success("Legitimate Transaction")
         else:
             st.error("Fraudulent Transaction Detected!")
-    except:
-        st.warning("Please enter valid comma-separated values (30 features required).")
-      
+            
+    except Exception as e:
+        st.warning("Please enter all 30 feature values separated by commas correctly.")
+        
