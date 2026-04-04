@@ -18,4 +18,4 @@ This project uses a **Random Forest Classifier** to identify fraudulent transact
 
 ## 🔧 How to Run
 1. Install requirements: `pip install -r requirements.txt`
-2. Run the app: `streamlit run app.py`
+2. Run the app: https://smart-fraud-analysis.streamlit.app/
