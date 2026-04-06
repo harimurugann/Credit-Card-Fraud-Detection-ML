@@ -3,30 +3,27 @@ import pandas as pd
 import joblib
 import numpy as np
 
-# Load the saved model
-model = joblib.load('credit_card_model.sav')
+# Load the saved pipeline
+model = joblib.load('full_pipeline.sav')
 
 st.title("Credit Card Fraud Detection System")
+st.write("Enter transaction details to check if it is Fraudulent or Normal.")
 
-st.write("Enter transaction features to check for fraud:")
+# Creating input fields for the features
+# Note: Since there are 30 features, for simplicity we use a few or provide a way to upload CSV
+input_data = st.text_input("Enter feature values separated by commas (30 values):")
 
-# Input field for features
-input_df = st.text_input('Input all feature values separated by commas')
-
-if st.button('Predict'):
-    try:
-        # Convert input string to numpy array
-        input_list = [float(x) for x in input_df.split(',')]
-        features = np.array(input_list).reshape(1, -1)
-        
-        # Making prediction
-        prediction = model.predict(features)
-        
-        if prediction[0] == 0:
-            st.success("Legitimate Transaction")
-        else:
-            st.error("Fraudulent Transaction Detected!")
-            
-    except Exception as e:
-        st.warning("Please enter all 30 feature values separated by commas correctly.")
-        
+if st.button("Predict"):
+    if input_data:
+        try:
+            values = [float(i) for i in input_data.split(',')]
+            if len(values) == 30:
+                prediction = model.predict([values])
+                if prediction[0] == 0:
+                    st.success("Result: This is a NORMAL Transaction.")
+                else:
+                    st.error("Result: This is a FRAUDULENT Transaction!")
+            else:
+                st.warning("Please enter exactly 30 values.")
+        except Exception as e:
+            st.error(f"Error: {e}")
