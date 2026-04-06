@@ -1,3 +1,6 @@
+## 🔗 Live Demo
+You can try the live app here: [🚀 Click to open Credit Card Fraud Detection App](https://smart-fraud-analysis.streamlit.app/)
+
 # Credit Card Fraud Detection 💳
 
 An AI-powered system to detect fraudulent credit card transactions using Machine Learning.
