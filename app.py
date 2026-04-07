@@ -33,8 +33,7 @@ if uploaded_file is not None:
     if not fraud_only.empty:
         st.error("### 🚩 List of Fraudulent Transactions Identified:")
         # Highlighted Table
-        st.dataframe(fraud_only.style.applymap(lambda x: 'background-color: #ffcccc', subset=['Status']))
-        
+        st.dataframe(fraud_only.style.map(lambda x: 'background-color: #ffcccc', subset=['Status']))
         # Download button for the Fraud Report
         csv = fraud_only.to_csv(index=False).encode('utf-8')
         st.download_button("Download Fraud Report", csv, "fraud_report.csv", "text/csv")
