@@ -1,29 +1,44 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import numpy as np
 
 # Load the saved pipeline
 model = joblib.load('full_pipeline.sav')
 
-st.title("Credit Card Fraud Detection System")
-st.write("Enter transaction details to check if it is Fraudulent or Normal.")
+st.title("🛡️ Smart Fraud Investigation Dashboard")
 
-# Creating input fields for the features
-# Note: Since there are 30 features, for simplicity we use a few or provide a way to upload CSV
-input_data = st.text_input("Enter feature values separated by commas (30 values):")
+# Option 1: File Upload for Bulk Data (100+ rows)
+uploaded_file = st.file_uploader("Upload Transaction CSV File for Analysis", type=["csv"])
 
-if st.button("Predict"):
-    if input_data:
-        try:
-            values = [float(i) for i in input_data.split(',')]
-            if len(values) == 30:
-                prediction = model.predict([values])
-                if prediction[0] == 0:
-                    st.success("Result: This is a NORMAL Transaction.")
-                else:
-                    st.error("Result: This is a FRAUDULENT Transaction!")
-            else:
-                st.warning("Please enter exactly 30 values.")
-        except Exception as e:
-            st.error(f"Error: {e}")
+if uploaded_file is not None:
+    data = pd.read_csv(uploaded_file)
+    
+    # Make predictions for the entire file
+    # Note: Assuming the CSV has the same 30 features as training
+    predictions = model.predict(data)
+    
+    # Add predictions back to the dataframe
+    data['Status'] = predictions
+    data['Status'] = data['Status'].map({0: 'Normal', 1: '🚨 FRAUD'})
+    
+    # --- HERE IS YOUR IDEA IMPLEMENTED ---
+    
+    # 1. Total Summary
+    total_fraud = (predictions == 1).sum()
+    st.subheader(f"Analysis Summary: Found {total_fraud} Fraudulent Transactions")
+    
+    # 2. Filter and Show ONLY Fraud Transactions
+    fraud_only = data[data['Status'] == '🚨 FRAUD']
+    
+    if not fraud_only.empty:
+        st.error("### 🚩 List of Fraudulent Transactions Identified:")
+        # Highlighted Table
+        st.dataframe(fraud_only.style.applymap(lambda x: 'background-color: #ffcccc', subset=['Status']))
+        
+        # Download button for the Fraud Report
+        csv = fraud_only.to_csv(index=False).encode('utf-8')
+        st.download_button("Download Fraud Report", csv, "fraud_report.csv", "text/csv")
+    else:
+        st.success("✅ No Fraudulent Transactions detected in this batch!")
+
+# Option 2: Individual Input (Keep your existing single input logic here...)
