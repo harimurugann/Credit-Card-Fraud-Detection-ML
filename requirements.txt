@@ -1,47 +1,17 @@
-# ============================================================
-# requirements.txt — Credit Card Fraud Detection Pipeline
-# Pinned versions for reproducibility and stability
-# Python >= 3.9 recommended
-# ============================================================
-
-# ── Core data science ────────────────────────────────────────
-numpy==1.26.4
-pandas==2.2.2
-scipy==1.13.0
-
-# ── Machine learning ─────────────────────────────────────────
-scikit-learn==1.4.2
-xgboost==2.0.3
-lightgbm==4.3.0
-
-# ── Imbalanced learning ──────────────────────────────────────
-imbalanced-learn==0.12.2
-
-# ── Model serialization ──────────────────────────────────────
-joblib==1.4.0
-
-# ── Visualization ────────────────────────────────────────────
-matplotlib==3.8.4
-seaborn==0.13.2
-plotly==5.21.0
-kaleido==0.2.1          # Plotly static image export
-
-# ── Streamlit app ────────────────────────────────────────────
-streamlit==1.34.0
-watchdog==4.0.0          # Better file watching in dev mode
-
-# ── Utilities ────────────────────────────────────────────────
-tqdm==4.66.2
-python-dotenv==1.0.1
-
-# ── Optional: SHAP for explainability (PC recommended) ───────
-# shap==0.45.0
-
-# ── Install command ──────────────────────────────────────────
-# pip install -r requirements.txt
-#
-# For GPU-accelerated XGBoost (PC with NVIDIA GPU):
-# pip install xgboost[gpu]
-#
-# For M1/M2 Mac:
-# pip install lightgbm --install-option=--mpi
+numpy
+pandas
+scipy
+scikit-learn
+xgboost
+lightgbm
+imbalanced-learn
+joblib
+matplotlib
+seaborn
+plotly
+kaleido        
+streamlit
+watchdog         
+tqdm
+python-dotenv
+shap                                                          
