@@ -1,13 +1,13 @@
 # ============================================================
 # app.py — Streamlit Fraud Detection Inference App
-# UI/UX Enhanced Version | Mobile & PC compatible
+# UI/UX Enhanced Version | Fixed Batch Processing
 # ============================================================
 import os
 import time
-import numpy as np
 import pandas as pd
 import streamlit as st
 import joblib
+from sklearn.preprocessing import RobustScaler
 
 # ─────────────────────────────────────────────────────────────
 # PAGE CONFIGURATION
@@ -91,9 +91,10 @@ st.markdown("""
 @st.cache_resource(show_spinner=False)
 def load_model():
     """Load the fully fitted model/pipeline."""
-    path = "outputs/fraud_pipeline.sav"
-    if os.path.exists(path):
-        return joblib.load(path)
+    paths = ["outputs/best_fraud_model.sav", "outputs/fraud_pipeline.sav"]
+    for path in paths:
+        if os.path.exists(path):
+            return joblib.load(path)
     return None
 
 def get_v_features():
@@ -105,7 +106,6 @@ def get_v_features():
 active_model = load_model()
 
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/6213/6213275.png", width=100)
     st.markdown("## ⚙️ Control Panel")
     
     if active_model:
@@ -118,7 +118,7 @@ with st.sidebar:
                           help="Lower threshold makes the system more sensitive to fraud.")
     
     st.markdown("---")
-    st.caption("FraudShield AI v2.0 | Built by AI Data Engineer")
+    st.caption("FraudShield AI | Built by AI Data Engineer")
 
 # ─────────────────────────────────────────────────────────────
 # MAIN DASHBOARD HEADER
@@ -166,9 +166,9 @@ with tab1:
     # Primary Inputs
     c1, c2 = st.columns(2)
     with c1:
-        scaled_amount = st.number_input("Transaction Amount ($)", value=amount_val, format="%.2f")
+        scaled_amount = st.number_input("Transaction Amount ($) / scaled_amount", value=amount_val, format="%.2f")
     with c2:
-        scaled_time = st.number_input("Time (Seconds from first txn)", value=time_val, format="%.2f")
+        scaled_time = st.number_input("Time / scaled_time", value=time_val, format="%.2f")
 
     # Advanced Inputs hidden in an expander for Mobile friendliness
     with st.expander("⚙️ Advanced PCA Features (V1 - V28)"):
@@ -191,29 +191,36 @@ with tab1:
                 input_df = pd.DataFrame([input_data])
                 
                 # Predict
-                probability = float(active_model.predict_proba(input_df)[:, 1][0])
-                prediction = int(probability >= threshold)
-                
-                # Display Results beautifully
-                if prediction == 1:
-                    st.markdown(f"""
-                    <div class="fraud-alert">
-                        🚨 HIGH RISK ALERT 🚨<br>
-                        <span style="font-size: 16px; color: #fff;">Fraud Probability: {probability*100:.2f}%</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                    <div class="safe-alert">
-                        ✅ TRANSACTION VERIFIED ✅<br>
-                        <span style="font-size: 16px; color: #fff;">Fraud Probability: {probability*100:.2f}%</span>
-                    </div>
-                    """, unsafe_allow_html=True)
+                try:
+                    if hasattr(active_model, "predict_proba"):
+                        probability = float(active_model.predict_proba(input_df)[:, 1][0])
+                    else:
+                        probability = float(active_model.predict(input_df)[0])
+                        
+                    prediction = int(probability >= threshold)
+                    
+                    # Display Results beautifully
+                    if prediction == 1:
+                        st.markdown(f"""
+                        <div class="fraud-alert">
+                            🚨 HIGH RISK ALERT 🚨<br>
+                            <span style="font-size: 16px; color: #fff;">Fraud Probability: {probability*100:.2f}%</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"""
+                        <div class="safe-alert">
+                            ✅ TRANSACTION VERIFIED ✅<br>
+                            <span style="font-size: 16px; color: #fff;">Fraud Probability: {probability*100:.2f}%</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                except Exception as e:
+                    st.error(f"Prediction Error: {e}")
 
-# ─── TAB 2: BATCH PROCESSING ────────────────────────────────
+# ─── TAB 2: BATCH PROCESSING (Fixed Error) ──────────────────
 with tab2:
     st.markdown("### Upload Multiple Transactions")
-    st.caption("Upload a CSV file containing V1-V28, scaled_amount, and scaled_time to analyze bulk records.")
+    st.caption("Upload a CSV file to analyze bulk records.")
     
     uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
     
@@ -223,12 +230,43 @@ with tab2:
         
         if st.button("Analyze Batch"):
             with st.spinner("Processing batch..."):
-                probs = active_model.predict_proba(df)[:, 1]
-                df["Fraud_Probability"] = probs
-                df["Risk_Status"] = ["Fraud" if p >= threshold else "Safe" for p in probs]
-                
-                st.dataframe(df[["Risk_Status", "Fraud_Probability"]], use_container_width=True)
-                
-                # Provide download option
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button("⬇️ Download Results", csv, "fraud_analysis_results.csv", "text/csv")
+                try:
+                    # 1. Handle Raw Data (Scale Time & Amount if present)
+                    if "Amount" in df.columns and "Time" in df.columns:
+                        scaler = RobustScaler()
+                        df["scaled_amount"] = scaler.fit_transform(df[["Amount"]])
+                        df["scaled_time"] = scaler.fit_transform(df[["Time"]])
+                        
+                    # 2. Extract strictly the required 30 features
+                    expected_features = [f"V{i}" for i in range(1, 29)] + ["scaled_amount", "scaled_time"]
+                    
+                    # Check if all expected features are present
+                    missing_cols = [col for col in expected_features if col not in df.columns]
+                    
+                    if missing_cols:
+                        st.error(f"Missing columns in CSV: {missing_cols}")
+                        st.info("Ensure your CSV has V1-V28 and either (Amount, Time) or (scaled_amount, scaled_time).")
+                    else:
+                        # Select ONLY the features the model knows (Ignore Class, Time, Amount, etc.)
+                        X_batch = df[expected_features]
+                        
+                        # 3. Predict
+                        if hasattr(active_model, "predict_proba"):
+                            probs = active_model.predict_proba(X_batch)[:, 1]
+                        else:
+                            probs = active_model.predict(X_batch)
+                            
+                        # 4. Prepare Results
+                        result_df = df.copy() # Keep original data for user reference
+                        result_df["Fraud_Probability"] = probs
+                        result_df["Risk_Status"] = ["Fraud" if p >= threshold else "Safe" for p in probs]
+                        
+                        # Show output beautifully
+                        st.dataframe(result_df[["Risk_Status", "Fraud_Probability"]].head(100), use_container_width=True)
+                        
+                        # Download option
+                        csv = result_df.to_csv(index=False).encode('utf-8')
+                        st.download_button("⬇️ Download Results", csv, "fraud_analysis_results.csv", "text/csv")
+                        
+                except Exception as e:
+                    st.error(f"Error during batch processing: {e}")
